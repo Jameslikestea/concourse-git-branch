@@ -10,6 +10,7 @@ import (
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/go-git/go-git/v5/storage/memory"
+	ssh2 "golang.org/x/crypto/ssh"
 
 	"github.com/Jameslikestea/concourse-git-branch/models"
 )
@@ -32,6 +33,12 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	conf, err := pkey.ClientConfig()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	conf.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
 
 	refs, err := repo.List(
 		&git.ListOptions{
