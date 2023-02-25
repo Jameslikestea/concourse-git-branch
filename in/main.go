@@ -1,1 +1,7 @@
-package in
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("{}")
+}

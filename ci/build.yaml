@@ -1,0 +1,44 @@
+---
+resources:
+  - type: git
+    name: cgb
+    icon: github
+    source:
+      uri: git@github.com:Jameslikestea/concourse-git-branch.git
+      private_key: ((grm_secrets.ssh_key))
+      branches: 'main'
+
+  - type: registry-image
+    name: image
+    icon: docker
+    source:
+      repository: ghcr.io/jameslikestea/concourse-git-branch
+      username: jameslikestea
+      password: ((grm_secrets.github_token))
+      tag: latest
+
+jobs:
+  - name: noop
+    public: true
+    plan:
+      - get: cgb
+        trigger: true
+      - task: build-image
+        privileged: true
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: concourse/oci-build-task
+          inputs:
+            - name: cgb
+          outputs:
+            - name: image
+          params:
+            CONTEXT: cgb
+          run:
+            path: build
+      - put: image
+        params:
+          image: image/image.tar
