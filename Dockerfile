@@ -6,4 +6,4 @@ RUN CGO_ENABLED=false go build -o ./bin/out ./out
 RUN CGO_ENABLED=false go build -o ./bin/in ./in
 
 FROM alpine
-COPY --from=builder ./bin/* /opt/resource/
+COPY --from=builder /app/bin/* /opt/resource/
