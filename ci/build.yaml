@@ -1,4 +1,13 @@
 ---
+resource_types:
+  - name: git-repo
+    type: registry-image
+    source:
+      repository: ghcr.io/jameslikestea/concourse-git-branch
+      username: jameslikestea
+      password: ((grm_secrets.github_token))
+      tag: latest
+
 resources:
   - type: git
     name: cgb
@@ -17,10 +26,18 @@ resources:
       password: ((grm_secrets.github_token))
       tag: latest
 
+  - type: git-repo
+    name: cgb-repo
+    icon: github
+    source:
+      uri: git@github.com:Jameslikestea/concourse-git-branch.git
+      private_key: ((grm_secrets.ssh_key))
+
 jobs:
   - name: noop
     public: true
     plan:
+      - get: cgb-repo
       - get: cgb
         trigger: true
       - task: build-image

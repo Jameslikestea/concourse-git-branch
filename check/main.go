@@ -3,5 +3,5 @@ package main
 import "fmt"
 
 func main() {
-	fmt.Println("[{}]")
+	fmt.Println("[{\"ref\":\"399a572\",\"branch\":\"main\"}]")
 }
