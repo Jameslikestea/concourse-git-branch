@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 
@@ -49,9 +48,14 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	for _, ref := range refs {
-		fmt.Fprintf(os.Stderr, "%s: %s", ref.Name().Short(), ref.Hash().String())
+	output := make(models.CheckOutput, len(refs))
+
+	for i, ref := range refs {
+		output[i] = models.GitBranch{
+			Branch: ref.Name().Short(),
+			Ref:    ref.Hash().String(),
+		}
 	}
 
-	fmt.Printf("[]\n")
+	json.NewEncoder(os.Stdout).Encode(output)
 }
