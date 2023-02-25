@@ -6,4 +6,5 @@ RUN CGO_ENABLED=0 go build -o ./bin/out ./out
 RUN CGO_ENABLED=0 go build -o ./bin/in ./in
 
 FROM alpine
+ENV SSH_KNOWN_HOSTS=""
 COPY --from=builder /app/bin/* /opt/resource/
