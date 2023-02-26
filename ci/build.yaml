@@ -6,7 +6,7 @@ resource_types:
       repository: ghcr.io/jameslikestea/concourse-git-branch
       username: jameslikestea
       password: ((grm_secrets.github_token))
-      tag: sha256:7a8fd6c9803610072c6a3d3479440d0b8663c46f32875b23048dc50ae12945b6
+      tag: sha256:361eddb8cab110ef168678e3a00a6e2d9508d80039663263d800a2403c24f632
 
 resources:
   - type: registry-image
