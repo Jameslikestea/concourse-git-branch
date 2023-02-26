@@ -2,11 +2,16 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
+	"sort"
+	"time"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/go-git/go-git/v5/storage/memory"
 	ssh2 "golang.org/x/crypto/ssh"
@@ -21,8 +26,12 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	fmt.Fprintf(os.Stderr, "Scanning Github Branches from: %s\n", req.Version.Time.Format(time.RFC3339Nano))
+
+	store := memory.NewStorage()
+
 	repo := git.NewRemote(
-		memory.NewStorage(), &config.RemoteConfig{
+		store, &config.RemoteConfig{
 			Name: "origin",
 			URLs: []string{req.Source.URI},
 		},
@@ -39,23 +48,47 @@ func main() {
 
 	conf.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
 
-	refs, err := repo.List(
-		&git.ListOptions{
+	err = repo.Fetch(
+		&git.FetchOptions{
 			Auth: pkey,
+			RefSpecs: []config.RefSpec{
+				"+refs/heads/*:refs/remotes/origin/*",
+			},
 		},
 	)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	output := make(models.CheckOutput, len(refs))
-
-	for i, ref := range refs {
-		output[i] = models.GitBranch{
-			Branch: ref.Name().Short(),
-			Ref:    ref.Hash().String(),
-		}
+	output := models.CheckOutput{
+		req.Version,
 	}
+
+	iter, err := store.IterReferences()
+	iter.ForEach(
+		func(reference *plumbing.Reference) error {
+			c, err := object.GetCommit(store, reference.Hash())
+			if err != nil {
+				return err
+			}
+			if req.Version.Time.Before(c.Author.When) {
+				output = append(
+					output, models.GitBranch{
+						Branch: reference.Name().Short(),
+						Ref:    reference.Hash().String(),
+						Time:   c.Author.When,
+					},
+				)
+			}
+			return nil
+		},
+	)
+
+	sort.Slice(
+		output, func(i, j int) bool {
+			return output[i].Time.Before(output[j].Time)
+		},
+	)
 
 	json.NewEncoder(os.Stdout).Encode(output)
 }
