@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/go-git/go-git/v5"
@@ -50,7 +51,8 @@ func main() {
 
 	err = repo.Fetch(
 		&git.FetchOptions{
-			Auth: pkey,
+			Auth:       pkey,
+			RemoteName: "origin",
 			RefSpecs: []config.RefSpec{
 				"+refs/heads/*:refs/remotes/origin/*",
 			},
@@ -74,7 +76,7 @@ func main() {
 			if req.Version.Time.Before(c.Author.When) {
 				output = append(
 					output, models.GitBranch{
-						Branch: reference.Name().Short(),
+						Branch: strings.TrimPrefix(reference.Name().Short(), "origin/"),
 						Ref:    reference.Hash().String(),
 						Time:   c.Author.When,
 					},
