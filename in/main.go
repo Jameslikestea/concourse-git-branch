@@ -73,5 +73,12 @@ func main() {
 	output.Metadata = append(output.Metadata, models.KVPair{"Author Email", c.Author.Email})
 	output.Metadata = append(output.Metadata, models.KVPair{"Commit Message", c.Message})
 
+	os.MkdirAll(destination+"/.metadata", 0755)
+	os.WriteFile(destination+"/.metadata/commit", []byte(c.Hash.String()), 0644)
+	os.WriteFile(destination+"/.metadata/author_name", []byte(c.Author.Name), 0644)
+	os.WriteFile(destination+"/.metadata/author_email", []byte(c.Author.Email), 0644)
+	os.WriteFile(destination+"/.metadata/message", []byte(c.Message), 0644)
+	os.WriteFile(destination+"/.metadata/branch", []byte(req.Version.Branch), 0644)
+
 	json.NewEncoder(os.Stdout).Encode(output)
 }
