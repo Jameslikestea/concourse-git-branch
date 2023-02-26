@@ -9,14 +9,6 @@ resource_types:
       tag: latest
 
 resources:
-  - type: git
-    name: cgb
-    icon: github
-    source:
-      uri: git@github.com:Jameslikestea/concourse-git-branch.git
-      private_key: ((grm_secrets.ssh_key))
-      branches: 'main'
-
   - type: registry-image
     name: image
     icon: docker
@@ -38,7 +30,7 @@ jobs:
     public: true
     plan:
       - get: cgb-repo
-      - get: cgb
+        version: every
         trigger: true
       - task: build-image
         privileged: true
@@ -49,11 +41,11 @@ jobs:
             source:
               repository: concourse/oci-build-task
           inputs:
-            - name: cgb
+            - name: cgb-repo
           outputs:
             - name: image
           params:
-            CONTEXT: cgb
+            CONTEXT: cgb-repo
           run:
             path: build
       - put: image
