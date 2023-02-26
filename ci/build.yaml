@@ -26,7 +26,7 @@ resources:
       private_key: ((grm_secrets.ssh_key))
 
 jobs:
-  - name: noop
+  - name: build
     public: true
     plan:
       - get: cgb-repo
